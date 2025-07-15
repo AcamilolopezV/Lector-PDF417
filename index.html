@@ -2,61 +2,68 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Escáner PDF417 Cédula</title>
+  <title>Lector PDF417</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script type="module">
-    import { BrowserMultiFormatReader, BarcodeFormat } from 'https://cdn.jsdelivr.net/npm/@zxing/browser@0.0.10/+esm';
-
-    const codeReader = new BrowserMultiFormatReader();
-
-    window.addEventListener('load', async () => {
-      const videoElement = document.getElementById('video');
-      const resultElement = document.getElementById('result');
-
-      const devices = await codeReader.listVideoInputDevices();
-      const selectedDeviceId = devices[0]?.deviceId;
-
-      if (!selectedDeviceId) {
-        resultElement.innerText = 'No se detectó cámara.';
-        return;
-      }
-
-      codeReader.decodeFromVideoDevice(selectedDeviceId, videoElement, (result, err) => {
-        if (result) {
-          resultElement.innerText = 'Código leído:\n' + result.getText();
-          codeReader.reset(); // Detener luego de primer escaneo
-        }
-      }, {
-        formats: [BarcodeFormat.PDF_417]
-      });
-    });
-  </script>
-
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      background: #f2f2f2;
+      background-color: #f0f0f0;
       padding: 1rem;
     }
-
     video {
       width: 100%;
       max-width: 400px;
-      border: 2px solid #333;
+      border: 2px solid #444;
     }
-
-    #result {
+    #output {
       margin-top: 1rem;
-      font-size: 1.1em;
+      font-size: 1rem;
       white-space: pre-wrap;
       color: green;
     }
   </style>
 </head>
 <body>
-  <h2>Escanear Cédula PDF417 Kailo 1.0</h2>
-  <video id="video" autoplay muted></video>
-  <div id="result">Escaneando...</div>
+  <h2>Escáner PDF417 CL7</h2>
+  <video id="video" autoplay muted playsinline></video>
+  <div id="output">Esperando escaneo...</div>
+
+  <script type="module">
+    import {
+      BrowserMultiFormatReader,
+      BarcodeFormat,
+      NotFoundException
+    } from 'https://cdn.jsdelivr.net/npm/@zxing/browser@0.0.10/+esm';
+
+    const codeReader = new BrowserMultiFormatReader();
+    const videoElement = document.getElementById('video');
+    const output = document.getElementById('output');
+
+    async function startScanner() {
+      try {
+        const devices = await codeReader.listVideoInputDevices();
+        if (devices.length === 0) {
+          output.textContent = 'No se detectó cámara.';
+          return;
+        }
+
+        const selectedDeviceId = devices[0].deviceId;
+
+        await codeReader.decodeFromVideoDevice(selectedDeviceId, videoElement, (result, err) => {
+          if (result) {
+            output.textContent = 'Código detectado:\n\n' + result.getText();
+            codeReader.reset(); // detener luego del primer escaneo
+          }
+        }, {
+          formats: [BarcodeFormat.PDF_417]
+        });
+      } catch (error) {
+        output.textContent = 'Error: ' + error.message;
+      }
+    }
+
+    startScanner();
+  </script>
 </body>
 </html>
