@@ -1,22 +1,23 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Lector PDF417</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Escáner PDF417 con html5-qrcode</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      background-color: #f0f0f0;
       padding: 1rem;
+      background: #f4f4f4;
     }
-    video {
+    #reader {
       width: 100%;
       max-width: 400px;
-      border: 2px solid #444;
+      margin: auto;
     }
-    #output {
+    #result {
       margin-top: 1rem;
       font-size: 1rem;
       white-space: pre-wrap;
@@ -25,45 +26,31 @@
   </style>
 </head>
 <body>
-  <h2>Escáner PDF417 CL7</h2>
-  <video id="video" autoplay muted playsinline></video>
-  <div id="output">Esperando escaneo...</div>
+  <h2>Escáner PDF417 CL7 2.0</h2>
+  <div id="reader"></div>
+  <div id="result">Esperando escaneo...</div>
 
-  <script type="module">
-    import {
-      BrowserMultiFormatReader,
-      BarcodeFormat,
-      NotFoundException
-    } from 'https://cdn.jsdelivr.net/npm/@zxing/browser@0.0.10/+esm';
+  <script>
+    const resultElement = document.getElementById("result");
 
-    const codeReader = new BrowserMultiFormatReader();
-    const videoElement = document.getElementById('video');
-    const output = document.getElementById('output');
-
-    async function startScanner() {
-      try {
-        const devices = await codeReader.listVideoInputDevices();
-        if (devices.length === 0) {
-          output.textContent = 'No se detectó cámara.';
-          return;
-        }
-
-        const selectedDeviceId = devices[0].deviceId;
-
-        await codeReader.decodeFromVideoDevice(selectedDeviceId, videoElement, (result, err) => {
-          if (result) {
-            output.textContent = 'Código detectado:\n\n' + result.getText();
-            codeReader.reset(); // detener luego del primer escaneo
-          }
-        }, {
-          formats: [BarcodeFormat.PDF_417]
-        });
-      } catch (error) {
-        output.textContent = 'Error: ' + error.message;
-      }
+    function onScanSuccess(decodedText, decodedResult) {
+      resultElement.innerText = "Código detectado:\n\n" + decodedText;
+      html5QrcodeScanner.clear(); // Detener escaneo
     }
 
-    startScanner();
+    function onScanFailure(error) {
+      console.warn(`No se detectó: ${error}`);
+    }
+
+    const html5QrcodeScanner = new Html5QrcodeScanner(
+      "reader", {
+        fps: 10,
+        qrbox: 250,
+        // ⚠️ aquí no se puede especificar PDF417, la librería escanea lo que pueda
+      }, false
+    );
+
+    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
   </script>
 </body>
 </html>
