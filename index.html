@@ -3,51 +3,56 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Lector PDF417</title>
+  <title>Escáner Cédula PDF417</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 1rem;
-      background: #f0f0f0;
-    }
-    h1 {
-      color: #333;
-    }
-    #reader {
-      width: 100%;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-    #result {
-      margin-top: 20px;
-      font-size: 1.2em;
-      color: green;
-      word-wrap: break-word;
-    }
+    body { font-family: sans-serif; text-align: center; padding: 1rem; background: #f4f4f4; }
+    #reader { width: 100%; max-width: 400px; margin: auto; }
+    .campo { margin: 8px 0; font-size: 1.1em; }
   </style>
 </head>
 <body>
-  <h1>Escáner PDF417</h1>
+  <h2>Escanea tu cédula</h2>
   <div id="reader"></div>
-  <div id="result">Esperando escaneo...</div>
+  <div id="datos"></div>
 
   <script>
-    function onScanSuccess(decodedText, decodedResult) {
-      document.getElementById("result").innerText = "Código leído: " + decodedText;
-      html5QrcodeScanner.clear(); // detener luego del primer escaneo
+    function onScanSuccess(textoCrudo) {
+      // ejemplo de extracción de campos básicos
+      // este formato puede variar dependiendo del documento
+      const datos = document.getElementById("datos");
+      datos.innerHTML = "<h3>Datos leídos:</h3>";
+
+      // Mostrar texto completo
+      datos.innerHTML += `<div class='campo'><strong>Texto completo:</strong> ${textoCrudo}</div>`;
+
+      // Aquí puedes intentar dividir el texto en campos si sabes el formato
+      // Por ejemplo, si sabes que:
+      // - los primeros 10 dígitos son el número de cédula
+      // - luego vienen nombres y apellidos
+      // puedes hacer algo como:
+
+      const numero = textoCrudo.substring(0, 10);
+      const nombres = textoCrudo.substring(10, 30).trim();
+      const nacimiento = textoCrudo.substring(30, 38);
+      
+      datos.innerHTML += `<div class='campo'><strong>Cédula:</strong> ${numero}</div>`;
+      datos.innerHTML += `<div class='campo'><strong>Nombre aproximado:</strong> ${nombres}</div>`;
+      datos.innerHTML += `<div class='campo'><strong>Fecha de nacimiento (año/mes/día):</strong> ${nacimiento}</div>`;
+
+      html5QrcodeScanner.clear();
     }
 
     function onScanFailure(error) {
-      // Puedes mostrar errores o ignorar
+      // opcional: mostrar errores
     }
 
-    const html5QrcodeScanner = new Html5QrcodeScanner(
-      "reader", 
-      { fps: 10, qrbox: 500, formatsToSupport: [Html5QrcodeSupportedFormats.PDF_417] }, 
-      false
-    );
+    const html5QrcodeScanner = new Html5QrcodeScanner("reader", {
+      fps: 10,
+      qrbox: 250,
+      formatsToSupport: [Html5QrcodeSupportedFormats.PDF_417]
+    }, false);
+
     html5QrcodeScanner.render(onScanSuccess, onScanFailure);
   </script>
 </body>
