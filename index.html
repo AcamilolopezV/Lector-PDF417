@@ -1,59 +1,62 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Escáner Cédula PDF417</title>
-  <script src="https://unpkg.com/html5-qrcode"></script>
+  <meta charset="UTF-8">
+  <title>Escáner PDF417 Cédula</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script type="module">
+    import { BrowserMultiFormatReader, BarcodeFormat } from 'https://cdn.jsdelivr.net/npm/@zxing/browser@0.0.10/+esm';
+
+    const codeReader = new BrowserMultiFormatReader();
+
+    window.addEventListener('load', async () => {
+      const videoElement = document.getElementById('video');
+      const resultElement = document.getElementById('result');
+
+      const devices = await codeReader.listVideoInputDevices();
+      const selectedDeviceId = devices[0]?.deviceId;
+
+      if (!selectedDeviceId) {
+        resultElement.innerText = 'No se detectó cámara.';
+        return;
+      }
+
+      codeReader.decodeFromVideoDevice(selectedDeviceId, videoElement, (result, err) => {
+        if (result) {
+          resultElement.innerText = 'Código leído:\n' + result.getText();
+          codeReader.reset(); // Detener luego de primer escaneo
+        }
+      }, {
+        formats: [BarcodeFormat.PDF_417]
+      });
+    });
+  </script>
+
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 1rem; background: #f4f4f4; }
-    #reader { width: 100%; max-width: 1000px; margin: auto; }
-    .campo { margin: 8px 0; font-size: 1.1em; }
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f2f2f2;
+      padding: 1rem;
+    }
+
+    video {
+      width: 100%;
+      max-width: 400px;
+      border: 2px solid #333;
+    }
+
+    #result {
+      margin-top: 1rem;
+      font-size: 1.1em;
+      white-space: pre-wrap;
+      color: green;
+    }
   </style>
 </head>
 <body>
-  <h2>Escanea tu cédula APP Kailo 1.0.0</h2>
-  <div id="reader"></div>
-  <div id="datos"></div>
-
-  <script>
-    function onScanSuccess(textoCrudo) {
-      // ejemplo de extracción de campos básicos
-      // este formato puede variar dependiendo del documento
-      const datos = document.getElementById("datos");
-      datos.innerHTML = "<h3>Datos leídos:</h3>";
-
-      // Mostrar texto completo
-      datos.innerHTML += `<div class='campo'><strong>Texto completo:</strong> ${textoCrudo}</div>`;
-
-      // Aquí puedes intentar dividir el texto en campos si sabes el formato
-      // Por ejemplo, si sabes que:
-      // - los primeros 10 dígitos son el número de cédula
-      // - luego vienen nombres y apellidos
-      // puedes hacer algo como:
-
-      const numero = textoCrudo.substring(0, 10);
-      const nombres = textoCrudo.substring(10, 30).trim();
-      const nacimiento = textoCrudo.substring(30, 38);
-      
-      datos.innerHTML += `<div class='campo'><strong>Cédula:</strong> ${numero}</div>`;
-      datos.innerHTML += `<div class='campo'><strong>Nombre aproximado:</strong> ${nombres}</div>`;
-      datos.innerHTML += `<div class='campo'><strong>Fecha de nacimiento (año/mes/día):</strong> ${nacimiento}</div>`;
-
-      html5QrcodeScanner.clear();
-    }
-
-    function onScanFailure(error) {
-      // opcional: mostrar errores
-    }
-
-    const html5QrcodeScanner = new Html5QrcodeScanner("reader", {
-      fps: 10,
-      qrbox: 1500,
-      formatsToSupport: [Html5QrcodeSupportedFormats.PDF_417]
-    }, false);
-
-    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-  </script>
+  <h2>Escanear Cédula PDF417 Kailo 1.0</h2>
+  <video id="video" autoplay muted></video>
+  <div id="result">Escaneando...</div>
 </body>
 </html>
