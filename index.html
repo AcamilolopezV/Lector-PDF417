@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lector PDF417</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 1rem;
+      background: #f0f0f0;
+    }
+    h1 {
+      color: #333;
+    }
+    #reader {
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 1.2em;
+      color: green;
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+<body>
+  <h1>Escáner PDF417</h1>
+  <div id="reader"></div>
+  <div id="result">Esperando escaneo...</div>
+
+  <script>
+    function onScanSuccess(decodedText, decodedResult) {
+      document.getElementById("result").innerText = "Código leído: " + decodedText;
+      html5QrcodeScanner.clear(); // detener luego del primer escaneo
+    }
+
+    function onScanFailure(error) {
+      // Puedes mostrar errores o ignorar
+    }
+
+    const html5QrcodeScanner = new Html5QrcodeScanner(
+      "reader", 
+      { fps: 10, qrbox: 250, formatsToSupport: [Html5QrcodeSupportedFormats.PDF_417] }, 
+      false
+    );
+    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+  </script>
+</body>
+</html>
