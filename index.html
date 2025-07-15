@@ -45,7 +45,7 @@
 
     const html5QrcodeScanner = new Html5QrcodeScanner(
       "reader", 
-      { fps: 10, qrbox: 250, formatsToSupport: [Html5QrcodeSupportedFormats.PDF_417] }, 
+      { fps: 10, qrbox: 500, formatsToSupport: [Html5QrcodeSupportedFormats.PDF_417] }, 
       false
     );
     html5QrcodeScanner.render(onScanSuccess, onScanFailure);
